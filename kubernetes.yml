@@ -1,0 +1,150 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      service: grafana
+    name: grafana
+  spec:
+    ports:
+    - name: dashboard
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+    selector:
+      service: grafana
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    creationTimestamp: null
+    name: gastracker
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          service: gastracker
+      spec:
+        containers:
+        - name: gastracker
+          image: eu.gcr.io/sanlab-1337/gastracker
+          env:
+          - name: ETHEREUM_RPC
+            value: http://104.155.126.252:8545
+          - name: INFLUXDB
+            value: http://influx:8086
+        restartPolicy: Always
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    creationTimestamp: null
+    name: grafana
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          service: grafana
+      spec:
+        containers:
+        - name: grafana
+          image: grafana/grafana:latest
+          env:
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            value: yeahbaby23
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          volumeMounts:
+          - mountPath: /var/lib/grafana
+            name: grafana-db
+          - mountPath: /etc/grafana
+            name: grafana-cfg
+        restartPolicy: Always
+        volumes:
+        - name: grafana-db
+          persistentVolumeClaim:
+            claimName: grafana-db
+        - name: grafana-cfg
+          persistentVolumeClaim:
+            claimName: grafana-cfg
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: grafana-db
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 50MiB
+  status: {}
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: grafana-cfg
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10MiB
+  status: {}
+- apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    creationTimestamp: null
+    name: influx
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          service: influx
+      spec:
+        containers:
+        - name: influx
+          image: influxdb:alpine
+          ports:
+          - containerPort: 8083
+            protocol: TCP
+          - containerPort: 8086
+            protocol: TCP
+          volumeMounts:
+          - mountPath: /var/lib/influxdb
+            name: influx
+        restartPolicy: Always
+        volumes:
+        - name: influx
+          persistentVolumeClaim:
+            claimName: influx
+  status:
+    replicas: 0
+- apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    creationTimestamp: null
+    name: influx
+  spec:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500MiB
+  status: {}
+kind: List
+metadata: {}
+

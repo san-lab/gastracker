@@ -1,0 +1,14 @@
+{
+  "url" : "http://influx:8086/",
+  "user" : "gastracker",
+  "password" : "gastracker",
+  "database" : "gastracker",
+  "Name" : "InfluxDB",
+  "Type" : "influxdb",
+  "isDefault" : true,
+  "basicAuth" : false,
+  "id" : 1,
+  "orgId" : 1,
+  "jsonData" : null,
+  "Access" : "proxy"
+}

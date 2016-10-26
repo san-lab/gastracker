@@ -1,0 +1,14 @@
+package: github.com/san-lab/gastracker
+import:
+- package: github.com/davecgh/go-spew
+  subpackages:
+  - spew
+- package: github.com/ethereum/go-ethereum
+  subpackages:
+  - common
+  - core/vm
+  - ethclient
+- package: github.com/influxdata/influxdb
+  subpackages:
+  - client/v2
+- package: github.com/kouhin/envflag

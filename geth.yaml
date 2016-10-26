@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: geth
+  labels:
+    name: geth
+spec:
+  ports:
+    - port: 8545
+      targetPort: 8545
+      name: rpc
+    - port: 8546
+      targetPort: 8546
+      name: rpc-ws
+    - port: 30303
+      targetPort: 30303
+      name: ethereum
+  selector:
+    app: geth
+  type: "LoadBalancer"
+  sessionAffinity: "ClientIP"
+  loadBalancerIP: "104.155.126.252"
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: geth
+spec:
+  replicas: 1
+  selector:
+    app: geth
+  template:
+    metadata:
+      name: geth
+      labels:
+        app: geth
+    spec:
+      containers:
+      - name: geth
+        image: ethereum/client-go:alpine
+        command: ["/geth", "--fast", "--rpc", "--rpcaddr", "0.0.0.0", "--ws", "--wsaddr", "0.0.0.0"]
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8545
+          name: rpc
+        - containerPort: 8546
+          name: rpc-ws
+        - containerPort: 30303
+          name: peer-tcp
+          protocol: TCP
+        - containerPort: 30303
+          name: peer-udp
+          protocol: UDP
+        volumeMounts:
+        - mountPath: "/root/.ethereum"
+          name: "fast"
+      volumes:
+      - name: "fast"
+        hostPath:
+          path: "/mnt/disks/ssd0"
+      nodeSelector:
+        cloud.google.com/gke-local-ssd: "true"

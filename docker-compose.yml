@@ -1,0 +1,30 @@
+version: '2'
+services:
+
+  gastracker:
+    build: .
+    environment:
+      - ETHEREUM_RPC=
+      - INFLUXDB=http://influx:8086
+    links:
+      - influx
+    depends_on:
+      - influx
+    restart: always
+
+  influx:
+    image: influxdb:alpine
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=awesome_gastracker
+#      - GF_SERVER_ROOT_URL=https://gastracker.sanlab.io/
+    depends_on:
+      - influx
+    links:
+      - influx
+    restart: always
